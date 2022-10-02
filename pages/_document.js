@@ -33,6 +33,7 @@ export default class extends Document {
       sheet.seal();
     }
   }
+  
 
   render() {
     const { styles } = this.props;
@@ -44,6 +45,7 @@ export default class extends Document {
           <meta name="application-name" content="App" />
           ...
           <script
+            // src={`https://maps.googleapis.com/maps/api/js?key=${settings?.googleMaps?.apiKey}&callback=initMap&libraries=&v=weekly`}
             src={`https://maps.googleapis.com/maps/api/js?key=${settings?.googleMaps?.apiKey}&libraries=&v=weekly`}
             async
           ></script>
