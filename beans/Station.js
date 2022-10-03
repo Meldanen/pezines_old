@@ -4,7 +4,7 @@ export class Station {
     constructor(station) {     
         this.name = station == undefined ? "N/A" : station.name;
         this.location = station == undefined ? "N/A" : station.location;
-        this.price = station == undefined ? 9999.9999 : station.price; // :)
+        this.price = station == undefined ? Number.POSITIVE_INFINITY : station.price; // :)
         this.setColour(MarkerColour.RED);
     }
 
