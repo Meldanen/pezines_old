@@ -4,6 +4,7 @@ import fsPromises from 'fs/promises';
 import path from 'path';
 import PetrolType from "../../enums/PetrolType";
 import { getPetrolStations } from "../../services/PetrolStationService";
+import { createMarker } from "../../utils/MarkerUtils";
 
 var infoWindow = undefined;
 
@@ -13,6 +14,7 @@ class Map extends React.Component {
     super();
     this.props = props;
     this.cheapestStation = undefined;
+    this.maximumDistanceForNearbyStation = 10000; // metres
   }
 
   async componentDidMount() {
@@ -50,62 +52,14 @@ class Map extends React.Component {
   handleDrawMarkers = async () => {
     const bounds = new google.maps.LatLngBounds();
     const stationsJSON = this.getPetrolJson(PetrolType.UNLEADED_95).stations;
-    const stations = getPetrolStations(stationsJSON, this.currentLocation, 10000, PetrolType.UNLEADED_95);
+    const stations = getPetrolStations(stationsJSON, this.currentLocation, this.maximumDistanceForNearbyStation, PetrolType.UNLEADED_95);
     Object.values(stations).forEach(station => {
-      var marker = this.createMarker(station);
+      var marker = createMarker(station, this.map, this.infoWindow)
       bounds.extend(marker.getPosition());
     });
     this.map.fitBounds(bounds);
     this.map.panToBounds(bounds);
   };
-
-  createMarker(station) {
-    var contentString = this.getInfoWindowContentString(station);
-    var latitude = station.getLatitude();
-    var longitude = station.getLongitude();
-    var markerPosition = new google.maps.LatLng(latitude, longitude);
-    var marker = new google.maps.Marker({
-      position: markerPosition,
-      map: this.map,
-      title: station.getName(),
-      icon: {
-        url: station.getColour()
-      }
-    });
-    this.setMarkerClickListener(marker, contentString);
-    return marker;
-  }
-
-  setMarkerClickListener(marker, contentString) {
-    marker.addListener("click", () => {
-      infoWindow.setContent(contentString);
-      infoWindow.open({
-        anchor: marker,
-        map: this.map,
-        shouldFocus: false,
-      });
-    });
-  }
-
-  getInfoWindowContentString(station) {
-    var contentString = "";
-    contentString += '<div id="info-window-container">';
-    contentString += '<div id="info-window-title" class="info-window-title">';
-    contentString += "<b>" + station.getName() + "</b>";
-    contentString += '</div>';
-    contentString += '<div id="info-window-content">';
-    contentString += '<p id="info-window-paragraph">';
-    contentString += 'Price: ' + station.getPrice();
-    contentString += "</br>";
-    contentString += 'Address: ' + station.getAddress();
-    contentString += '</p>';
-    contentString += '<a href="www.google.com">';
-    contentString += 'Directions';
-    contentString += '</a>';
-    contentString += '</div>';
-    contentString += '</div>';
-    return contentString;
-  }
 
   render() {
     return (
