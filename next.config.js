@@ -1,3 +1,5 @@
+
+
 module.exports = {
   webpack: (config, {isServer}) => {
     if (!isServer) {
@@ -5,7 +7,7 @@ module.exports = {
       config.resolve.fallback = {
           fs: false
       }
-  }
+    }
     config.module.rules.push({
       test: /\.(graphql|gql)$/,
       include: [/graphql/],
