@@ -4,6 +4,8 @@ import fsPromises from 'fs/promises';
 import path from 'path';
 import PetrolType from "../../enums/PetrolType";
 import { Station } from "../../beans/Station";
+import {getDistance} from 'geolib';
+import MarkerColour from "../../enums/MarkerColour";
 
 var infoWindow = undefined;
 
@@ -25,7 +27,7 @@ class Map extends React.Component {
   }
 
   handleAttachGoogleMap = async () => {
-    const defaultCenter = await locateCurrentPosition().then(position=> position );
+    const defaultCenter = await locateCurrentPosition().then(position => position );
     this.map = new window.google.maps.Map(document.getElementById("google-map"), {
       center: {lat: defaultCenter.coords.latitude, lng: defaultCenter.coords.longitude},
       zoom: 10,
@@ -42,29 +44,41 @@ class Map extends React.Component {
     return this.props.pezines[petrolType];
   }
 
-  getPetrolStations(petrolType) {
-    var stations = [];
+  async getPetrolStations(petrolType, maximumDistanceForNearbyStation) {
+    var stations = {};
     var stationsJSON = this.getPetrolJson(petrolType).stations;
 
-    var cheapest = new Station(undefined);
+    var cheapestInCountry = new Station(undefined);
+    var cheapestNearby = new Station(undefined);
+    
+    const currentPosition = await locateCurrentPosition().then(position => ({latitude: position.coords.latitude, longitude: position.coords.longitude}) );
+    
     stationsJSON.forEach((stationJSON) => {
       var station = new Station(stationJSON);
-      if (cheapest.getPrice() >= station.getPrice()) {
-        cheapest = station;
+      var stationPosition = {latitude: station.getLatitude(), longitude: station.getLongitude()};
+      const distance = getDistance(stationPosition, currentPosition);
+      if (cheapestInCountry.getPrice() >= station.getPrice()) {
+        cheapestInCountry = station;
       }
-      stations.push(station);
+      if ((cheapestNearby.getPrice() >= station.getPrice()) && distance <= maximumDistanceForNearbyStation) {
+        cheapestNearby = station;
+      }
+      stations[station.name] = station
     });
-    this.cheapestStation = cheapest;
+    cheapestInCountry.setColour(MarkerColour.PURPLE);
+    cheapestNearby.setColour(MarkerColour.GREEN);
+    stations[cheapestInCountry.name] = cheapestInCountry;
+    stations[cheapestNearby.name] = cheapestNearby;
     return stations;
   }
 
   handleDrawMarkers = async () => {
     const bounds = new google.maps.LatLngBounds();
-    const stations = this.getPetrolStations(PetrolType.UNLEADED_95);
-    stations.forEach((station) => {
-      var marker = this.createMarker(station);
+    const stations = await this.getPetrolStations(PetrolType.UNLEADED_95, 50000);
+    for (const [key, value] of Object.entries(stations)) {
+      var marker = this.createMarker(value);
       bounds.extend(marker.getPosition());
-    });
+    }
     this.map.fitBounds(bounds);
     this.map.panToBounds(bounds);
   };
@@ -73,14 +87,13 @@ class Map extends React.Component {
     var contentString = this.getInfoWindowContentString(station);
     var latitude = station.getLatitude();
     var longitude = station.getLongitude();
-    var markerIconURL = this.cheapestStation == station ? "http://maps.google.com/mapfiles/ms/icons/purple-dot.png" : "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
     var markerPosition = new google.maps.LatLng(latitude, longitude);
     var marker = new google.maps.Marker({
       position: markerPosition,
       map: this.map,
       title: station.getName(),
       icon: {
-        url: markerIconURL
+        url: station.getColour()
       }
     });
     this.setMarkerClickListener(marker, contentString);

@@ -1,8 +1,11 @@
+import MarkerColour from "../enums/MarkerColour";
+
 export class Station {
-    constructor(station) {
-      this.name = station == undefined ? "N/A" : station.name;
-      this.location = station == undefined ? "N/A" : station.location;
-      this.price = station == undefined ? 9999.9999 : station.price; // :)
+    constructor(station) {     
+        this.name = station == undefined ? "N/A" : station.name;
+        this.location = station == undefined ? "N/A" : station.location;
+        this.price = station == undefined ? 9999.9999 : station.price; // :)
+        this.setColour(MarkerColour.RED);
     }
 
     getName() {
@@ -27,6 +30,18 @@ export class Station {
 
     getLongitude() {
         return this.location.coordinates.longitude;
+    }
+
+    getLongitude() {
+        return this.location.coordinates.longitude;
+    }
+
+    setColour(markerColour) {
+        this.colour = markerColour;
+    }
+
+    getColour() {
+        return this.colour;
     }
 
   }

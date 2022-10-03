@@ -12,6 +12,7 @@
     "dayjs": "^1.10.7",
     "fs": "0.0.1-security",
     "fs.promises": "^0.1.0",
+    "geolib": "^3.3.3",
     "graphql": "^16.0.1",
     "graphql-tag": "^2.12.6",
     "lodash": "^4.17.21",
