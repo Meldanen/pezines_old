@@ -1,6 +1,6 @@
 const settings = {
   googleMaps: {
-    apiKey: "AIzaSyA-X5TdhIVwNqBByAPpKBKzjwM2gUti0J0",
+    apiKey: "",
   },
   graphql: {
     uri: "http://localhost:5001/api/graphql",
