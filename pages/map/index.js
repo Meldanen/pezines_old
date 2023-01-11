@@ -15,13 +15,14 @@ class Map extends React.Component {
     this.props = props;
     this.cheapestStation = undefined;
     this.maximumDistanceForNearbyStation = 10000; // metres
+    
   }
 
   async componentDidMount() {
     document.body.classList.add("is-map");
+    this.infoWindow = new window.google.maps.InfoWindow({});
     await this.setCurrentLocation();
     this.handleAttachGoogleMap();
-    infoWindow = new window.google.maps.InfoWindow({});
   }
   componentWillUnmount() {
     document.body.classList.remove("is-map");
@@ -51,8 +52,9 @@ class Map extends React.Component {
 
   handleDrawMarkers = async () => {
     const bounds = new google.maps.LatLngBounds();
-    const stationsJSON = this.getPetrolJson(PetrolType.UNLEADED_95).stations;
-    const stations = getPetrolStations(stationsJSON, this.currentLocation, this.maximumDistanceForNearbyStation, PetrolType.UNLEADED_95);
+    const petrolType = PetrolType.UNLEADED_95;
+    const stationsJSON = this.getPetrolJson(petrolType).stations;
+    const stations = getPetrolStations(stationsJSON, this.currentLocation, this.maximumDistanceForNearbyStation, petrolType);
     Object.values(stations).forEach(station => {
       var marker = createMarker(station, this.map, this.infoWindow)
       bounds.extend(marker.getPosition());
@@ -84,7 +86,7 @@ export async function getStaticProps() {
   const objectData = JSON.parse(jsonData);
 
   return {
-    props: {pezines :objectData}
+    props: {pezines: objectData}
   }
 }
 
